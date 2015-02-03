@@ -1,6 +1,7 @@
 #include "stm32f10x_it.h"
 #include "stm32f10x_conf.h"
-
+#include "hwConf.h"
+#include "printf.h"
 
 
 void NMI_Handler(void)
@@ -99,65 +100,73 @@ void SysTick_Handler(void)
 void USART1_IRQHandler(void)
 {
 
+    if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
+    {
+        uint8_t readByte = USART_ReceiveData( USART1 );
+
+        USART_ClearITPendingBit(USART1,USART_IT_RXNE);
+        USART_SendData(USART1, readByte);
+
+        static uint8_t bytesReceived = 0; //ilosc odebranych bajtow
+        static uint8_t buff[6];
+
+        if( bytesReceived == 0 )
+        {
+            if( START_BYTE == readByte && bytesReceived == 0 ) //wykrycie markera poczatku
+            {
+                bytesReceived = 1;
+            }
+        }
+        else if( bytesReceived <= FRAME_LENGTH )
+        {
+            buff[ bytesReceived - 1 ] = readByte;
+            bytesReceived++;
+        }
+        else
+        {
+            if( readByte == STOP_BYTE)
+            {
+                printf_("Frame received successfully.\n");
+
+                CH1_LED_TIM->CCR1 = buff[0];
+                CH1_LED_TIM->CCR2 = buff[1];
+                CH1_LED_TIM->CCR3 = buff[2];
+
+                CH2_LED_TIM->CCR1 = buff[3];
+                CH2_LED_TIM->CCR2 = buff[4];
+                CH2_LED_TIM->CCR3 = buff[5];
+            }
+            else
+            {
+                printf_("Frame received with failure.\n");
+            }
+            bytesReceived = 0;
+        }
+    }
+
 }
 
-void USART2_IRQHandler(void)
+void USART3_IRQHandler(void)
 {
 
 }
 
 void TIM1_UP_IRQHandler (void)
 {
-/*	if (TIM_GetITStatus(TIM1, TIM_IT_Update) != RESET)
-  	{
-    	TIM_ClearITPendingBit(TIM1, TIM_IT_Update);
-    	//printf_(" TEST ");
-    	//printf_("\n\rT2=%d",TIM_GetCounter (TIM2));
-  	}*/
 }
 void TIM1_CC_IRQHandler(void)
 {
-/*  	if (TIM_GetITStatus(TIM1, TIM_IT_CC1) != RESET)
-  	{
-    	TIM_ClearITPendingBit(TIM1, TIM_IT_CC1);
-		//printf_("\n\rT2=%d",TIM_GetCounter (TIM2));
-  		//printf_("u");
-  	}*/
 }
 
 void TIM2_IRQHandler(void)
 {
-/*	if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET)
-	{
-		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
-	}*/
 }
 
 void ADC1_2_IRQHandler  ( void    )
 {
-	/*if( ADC_GetITStatus(ADC1,ADC_IT_JEOC))
-	{
-		ADC_ClearITPendingBit (ADC1, ADC_IT_JEOC);
-	}
-	if( ADC_GetITStatus(ADC1,ADC_IT_EOC))
-	{
-		ADC_ClearITPendingBit (ADC1, ADC_IT_EOC);
-		//printf_("T");
-	}*/
 }
 
 void DMA1_Channel1_IRQHandler(void)
 {
-/*	if( DMA_GetITStatus(DMA1_IT_TE1))
-	{
-		DMA_ClearITPendingBit(DMA1_IT_TE1);
-		DMA_Cmd(DMA1_Channel1, DISABLE);
-		DMA_Cmd(DMA1_Channel1, ENABLE);
-	}
-	if( DMA_GetITStatus(DMA1_IT_TC1))
-	{
-		DMA_ClearITPendingBit(DMA1_IT_TC1);
-	}
-	*/
 }
 

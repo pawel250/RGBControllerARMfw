@@ -29,6 +29,7 @@ CORE = cortex-m3
 # linker script
 LD_SCRIPT = system/STM32F103xB_rom.ld
 
+
 # output folder (absolute or relative path, leave empty for in-tree compilation)
 OUT_DIR = Debug
 
