@@ -2,6 +2,8 @@
 #include "stm32f10x_conf.h"
 #include "hwConf.h"
 #include "printf.h"
+#include <string.h>
+#include <stdlib.h>
 
 
 void NMI_Handler(void)
@@ -100,12 +102,11 @@ void SysTick_Handler(void)
 void USART1_IRQHandler(void)
 {
 
-    if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
+    if( USART_GetITStatus( USART1, USART_IT_RXNE ) != RESET)
     {
         uint8_t readByte = USART_ReceiveData( USART1 );
 
-        USART_ClearITPendingBit(USART1,USART_IT_RXNE);
-        USART_SendData(USART1, readByte);
+       // USART_SendData(USART1, readByte);
 
         static uint8_t bytesReceived = 0; //ilosc odebranych bajtow
         static uint8_t buff[6];
@@ -128,13 +129,13 @@ void USART1_IRQHandler(void)
             {
                 printf_("Frame received successfully.\n");
 
-                CH1_LED_TIM->CCR1 = buff[0];
-                CH1_LED_TIM->CCR2 = buff[1];
-                CH1_LED_TIM->CCR3 = buff[2];
+                CH1_R_LED_CCR = buff[0];
+                CH1_G_LED_CCR = buff[1];
+                CH1_B_LED_CCR = buff[2];
 
-                CH2_LED_TIM->CCR1 = buff[3];
-                CH2_LED_TIM->CCR2 = buff[4];
-                CH2_LED_TIM->CCR3 = buff[5];
+                CH2_R_LED_CCR = buff[3];
+                CH2_G_LED_CCR = buff[4];
+                CH2_B_LED_CCR = buff[5];
             }
             else
             {
@@ -143,12 +144,73 @@ void USART1_IRQHandler(void)
             bytesReceived = 0;
         }
     }
+    USART_ClearITPendingBit( USART1, USART_IT_RXNE );
+}
 
+void cmdHandler( uint8_t *buff )
+{
+    char *cmd = strtok( (char*)buff, " " );
+    char *param = strtok(NULL, " ");
+
+    uint8_t paramInt = atoi(param);
+
+    if( !strcmp(cmd, "1r") )
+    {
+        CH1_R_LED_CCR = paramInt;
+    }
+    else if( !strcmp(cmd, "1g") )
+    {
+        CH1_G_LED_CCR = paramInt;
+    }
+    else if( !strcmp(cmd, "1b") )
+    {
+        CH1_B_LED_CCR = paramInt;
+    }
+    else if( !strcmp(cmd, "2r") )
+    {
+        CH2_R_LED_CCR = paramInt;
+    }
+    else if( !strcmp(cmd, "2g") )
+    {
+        CH2_G_LED_CCR = paramInt;
+    }
+    else if( !strcmp(cmd, "2b") )
+    {
+        CH2_B_LED_CCR = paramInt;
+    }
 }
 
 void USART3_IRQHandler(void)
 {
+    if( USART_GetITStatus( USART3, USART_IT_RXNE ) != RESET )
+    {
+        static uint8_t buff[50];
+        static uint8_t receivedBytes = 0;
+        uint8_t readByte = USART_ReceiveData( USART3 );
 
+        USART_SendData( USART3, readByte );
+
+        if( receivedBytes < sizeof( buff ) )
+        {
+            if( readByte == 0x0D || readByte == 0x0A) //CR LF
+            {
+                buff[receivedBytes++] = '\0';
+                cmdHandler( buff );
+                receivedBytes = 0;
+            }
+            else
+            {
+                buff[receivedBytes++] = readByte; //reading command
+            }
+
+        }
+        else
+        {
+            receivedBytes = 0; //reset bytes counter
+        }
+    }
+
+    USART_ClearITPendingBit( USART3, USART_IT_RXNE );
 }
 
 void TIM1_UP_IRQHandler (void)

@@ -11,8 +11,8 @@
 
 void usart_put_char(char znak)
 {
-	while(!( USART1->SR & USART_SR_TXE)); //oczekiwanie dopoki flaga TXE==1
-	USART_SendData(USART1, znak);
+	while(!( USART3->SR & USART_SR_TXE)); //oczekiwanie dopoki flaga TXE==1
+	USART_SendData(USART3, znak);
 }
 
 
