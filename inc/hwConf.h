@@ -19,7 +19,7 @@
 #define BT_PORT         GPIOA   //USART and IO pins must be in the same port.
 #define BT_USART        USART1
 #define BT_ON           GPIO_Pin_11
-#define BT_SPEED        115200
+#define BT_SPEED        230400
 
 #define CH1_LED_TIM     TIM2
 #define CH1_LED_PORT    GPIOA
@@ -39,6 +39,11 @@
 #define CH2_G_LED_CCR   CH2_LED_TIM->CCR2
 #define CH2_B_LED_CCR   CH2_LED_TIM->CCR3
 
+#define POWER_ON_PIN    GPIO_Pin_3
+#define POWER_ON_PORT   GPIOA
+#define POWER_ON        Bit_RESET
+#define POWER_OFF       Bit_SET
+
 #define LED_FRESH_RATE  60
 #define CPU_F           16000000
 #define PWM_RES         255
@@ -46,6 +51,5 @@
 #define START_BYTE      1
 #define STOP_BYTE       START_BYTE + 2
 #define FRAME_LENGTH    6
-
 
 #endif /*HWCONF_H_ */

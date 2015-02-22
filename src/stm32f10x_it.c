@@ -4,6 +4,7 @@
 #include "printf.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 
 void NMI_Handler(void)
@@ -98,6 +99,10 @@ void SysTick_Handler(void)
 {
 	//disk_timerproc();
 }
+#ifdef DEBUG
+    #define BUFF_LENGTH 255
+    char bufferForPrint[BUFF_LENGTH] = {0};
+#endif /*DEBUG*/
 
 void USART1_IRQHandler(void)
 {
@@ -113,8 +118,14 @@ void USART1_IRQHandler(void)
 
         if( bytesReceived == 0 )
         {
-            if( START_BYTE == readByte && bytesReceived == 0 ) //wykrycie markera poczatku
+            #ifdef DEBUG
+                snprintf(bufferForPrint, BUFF_LENGTH, "%sBRecv:%d\n", bufferForPrint, bytesReceived);
+            #endif
+            if( START_BYTE == readByte ) //wykrycie markera poczatku
             {
+                #ifdef DEBUG
+                    snprintf(bufferForPrint, BUFF_LENGTH, "%sF start\n", bufferForPrint);
+                #endif
                 bytesReceived = 1;
             }
         }
@@ -122,12 +133,15 @@ void USART1_IRQHandler(void)
         {
             buff[ bytesReceived - 1 ] = readByte;
             bytesReceived++;
+            #ifdef DEBUG
+                snprintf(bufferForPrint, BUFF_LENGTH, "%sIsRecv\n", bufferForPrint);
+            #endif
         }
         else
         {
             if( readByte == STOP_BYTE)
             {
-                printf_("Frame received successfully.\n");
+                printf_("Frame recv: success.\n");
 
                 CH1_R_LED_CCR = buff[0];
                 CH1_G_LED_CCR = buff[1];
@@ -136,13 +150,28 @@ void USART1_IRQHandler(void)
                 CH2_R_LED_CCR = buff[3];
                 CH2_G_LED_CCR = buff[4];
                 CH2_B_LED_CCR = buff[5];
+
+                if (    buff[0] == 0 &&
+                        buff[1] == 0 &&
+                        buff[2] == 0 &&
+                        buff[3] == 0 &&
+                        buff[4] == 0 &&
+                        buff[5] == 0 )
+                {
+                    GPIO_WriteBit(POWER_ON_PORT, POWER_ON_PIN, POWER_OFF);
+                }
             }
             else
             {
-                printf_("Frame received with failure.\n");
+                printf_("Frame recv: fail.\n");
             }
+
             bytesReceived = 0;
         }
+
+        #ifdef DEBUG
+            printf_("%s", bufferForPrint);
+        #endif
     }
     USART_ClearITPendingBit( USART1, USART_IT_RXNE );
 }

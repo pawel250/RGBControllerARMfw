@@ -37,9 +37,9 @@ void TIM_Conf( TIM_TypeDef* TIMx  )
                                     TIM_CCMR1_OC2PE | TIM_CCMR1_OC1PE;//preload enable
     TIMx->CCMR2 |= TIM_CCMR2_OC3M  |  //output compare mode
                                     TIM_CCMR1_OC2PE;
-     TIMx->CCER |= TIM_CCER_CC1E | //TIM_CCER_CC1P |
-                                 TIM_CCER_CC2E | //TIM_CCER_CC2P |
-                                 TIM_CCER_CC3E;// | TIM_CCER_CC3P; //oc enable, polarity, now is inversed
+     TIMx->CCER |= TIM_CCER_CC1E | TIM_CCER_CC1P |
+                                 TIM_CCER_CC2E | TIM_CCER_CC2P |
+                                 TIM_CCER_CC3E | TIM_CCER_CC3P; //oc enable, polarity, now is inversed
      TIMx->PSC = CPU_F / (LED_FRESH_RATE * PWM_RES) - 1; //60hz if pwm has 255 resolution and hsck haas 2div.
      TIMx->ARR = PWM_RES;
      TIMx->CCR1 = 0;
@@ -91,6 +91,14 @@ void GPIO_Conf(void)
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
     GPIO_Init(CH2_LED_PORT, &GPIO_InitStructure);
+
+    //power supplier
+    GPIO_InitStructure.GPIO_Pin = POWER_ON_PIN;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP ;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+    GPIO_Init(POWER_ON_PORT, &GPIO_InitStructure);
+
+
 }
 
 
