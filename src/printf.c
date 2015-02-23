@@ -159,7 +159,7 @@ static int __vfprintf_(printf_file_t *stream, const char *format, va_list arg)
 
 #ifdef DEBUG
 
-caddr_t _sbrk (int size)
+/*caddr_t _sbrk (int size)
 {
    extern char __heap_start;
    extern char __heap_end;
@@ -177,5 +177,5 @@ caddr_t _sbrk (int size)
    current_heap_end += size;
 
    return (caddr_t) previous_heap_end;
-}
+}*/
 #endif

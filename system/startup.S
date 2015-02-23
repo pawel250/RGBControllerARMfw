@@ -32,11 +32,11 @@ Reset_Handler:
 
 /*
 +-----------------------------------------------------------------------------+
-| Thread mode uses process stack (PSP) and is privileged
+| Thread mode uses  stack (PSP) and is privileged
 +-----------------------------------------------------------------------------+
 */
 
-	/*movs	r0, #CONTROL_ALTERNATE_STACK
+	/*movs	r0, #CONTROL_ALTERNATE_STACK //main stack
 	msr		CONTROL, r0
 	isb*/
 

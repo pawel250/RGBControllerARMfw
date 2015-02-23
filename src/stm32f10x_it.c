@@ -99,33 +99,22 @@ void SysTick_Handler(void)
 {
 	//disk_timerproc();
 }
-#ifdef DEBUG
-    #define BUFF_LENGTH 255
-    char bufferForPrint[BUFF_LENGTH] = {0};
-#endif /*DEBUG*/
 
 void USART1_IRQHandler(void)
 {
-
-    if( USART_GetITStatus( USART1, USART_IT_RXNE ) != RESET)
+    if ( BT_USART->SR & USART_SR_RXNE )
     {
-        uint8_t readByte = USART_ReceiveData( USART1 );
+        uint8_t readByte = BT_USART->DR;
 
-       // USART_SendData(USART1, readByte);
+        BT_USART->DR = readByte;
 
         static uint8_t bytesReceived = 0; //ilosc odebranych bajtow
         static uint8_t buff[6];
 
         if( bytesReceived == 0 )
         {
-            #ifdef DEBUG
-                snprintf(bufferForPrint, BUFF_LENGTH, "%sBRecv:%d\n", bufferForPrint, bytesReceived);
-            #endif
             if( START_BYTE == readByte ) //wykrycie markera poczatku
             {
-                #ifdef DEBUG
-                    snprintf(bufferForPrint, BUFF_LENGTH, "%sF start\n", bufferForPrint);
-                #endif
                 bytesReceived = 1;
             }
         }
@@ -133,15 +122,12 @@ void USART1_IRQHandler(void)
         {
             buff[ bytesReceived - 1 ] = readByte;
             bytesReceived++;
-            #ifdef DEBUG
-                snprintf(bufferForPrint, BUFF_LENGTH, "%sIsRecv\n", bufferForPrint);
-            #endif
         }
         else
         {
             if( readByte == STOP_BYTE)
             {
-                printf_("Frame recv: success.\n");
+                //printf_("Frame recv: success.\n");
 
                 CH1_R_LED_CCR = buff[0];
                 CH1_G_LED_CCR = buff[1];
@@ -163,17 +149,13 @@ void USART1_IRQHandler(void)
             }
             else
             {
-                printf_("Frame recv: fail.\n");
+                //printf_("Frame recv: fail.\n");
             }
 
             bytesReceived = 0;
         }
-
-        #ifdef DEBUG
-            printf_("%s", bufferForPrint);
-        #endif
     }
-    USART_ClearITPendingBit( USART1, USART_IT_RXNE );
+    BT_USART->DR;
 }
 
 void cmdHandler( uint8_t *buff )
@@ -208,16 +190,26 @@ void cmdHandler( uint8_t *buff )
         CH2_B_LED_CCR = paramInt;
     }
 }
-
+extern volatile uint16_t errorUsart;
 void USART3_IRQHandler(void)
 {
-    if( USART_GetITStatus( USART3, USART_IT_RXNE ) != RESET )
+    //if( USART_GetITStatus( TERMINAL_USART, USART_IT_RXNE ) != RESET )
+    if ( (TERMINAL_USART->SR & USART_SR_FE) ||
+         (TERMINAL_USART->SR & USART_SR_IDLE) ||
+         (TERMINAL_USART->SR & USART_SR_NE) ||
+         (TERMINAL_USART->SR & USART_SR_ORE) )
+    {
+        errorUsart=TERMINAL_USART->SR;
+    }
+
+
+    if ( TERMINAL_USART->SR & USART_SR_RXNE )
     {
         static uint8_t buff[50];
         static uint8_t receivedBytes = 0;
-        uint8_t readByte = USART_ReceiveData( USART3 );
+        uint8_t readByte = USART_ReceiveData( TERMINAL_USART );
 
-        USART_SendData( USART3, readByte );
+        USART_SendData( TERMINAL_USART, readByte );
 
         if( receivedBytes < sizeof( buff ) )
         {
@@ -238,8 +230,7 @@ void USART3_IRQHandler(void)
             receivedBytes = 0; //reset bytes counter
         }
     }
-
-    USART_ClearITPendingBit( USART3, USART_IT_RXNE );
+    TERMINAL_USART->DR;
 }
 
 void TIM1_UP_IRQHandler (void)

@@ -18,7 +18,7 @@ RM = rm -f
 
 # project name
 MODE = -DDEBUG -g -ggdb3
-MODE = -DRELEASE
+#MODE = -DRELEASE
 WORKSPACE = /media/pawel/Data/armWorkspace/
 PROJECT = rgbController
 PROJECT_PATH = $(WORKSPACE)$(PROJECT)/

@@ -7,10 +7,43 @@
 #include "hwInit.h"
 #include "hwConf.h"
 
+
+void RCC_Conf(void)
+{
+    ErrorStatus HSEStartUpStatus;
+    RCC_DeInit();
+    RCC_HSEConfig(RCC_HSE_ON);
+    HSEStartUpStatus = RCC_WaitForHSEStartUp();
+    if(HSEStartUpStatus == SUCCESS)
+    {
+        FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);
+        FLASH_SetLatency(FLASH_Latency_2);
+        RCC_HCLKConfig(RCC_SYSCLK_Div1);
+        RCC_PCLK2Config(RCC_HCLK_Div2);
+        RCC_PCLK1Config(RCC_HCLK_Div2);
+        RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_9); //TODO //watch out on this prescaler !!!
+        RCC_PLLCmd(ENABLE);
+        while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET);
+        RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
+        while(RCC_GetSYSCLKSource() != 0x08);
+    }
+
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB | RCC_APB2Periph_AFIO, ENABLE);
+
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, DISABLE);
+    #ifdef DEBUG
+        RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
+    #endif
+
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
+}
+
 void UART_Conf(void)
 {
     //bt
-	USART_InitTypeDef USART_InitStructure;
+/*	USART_InitTypeDef USART_InitStructure;
 	USART_InitStructure.USART_BaudRate = BT_SPEED ;//460800;
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;
@@ -20,14 +53,17 @@ void UART_Conf(void)
 	USART_Init( BT_USART, &USART_InitStructure);
 	USART_ITConfig(BT_USART, USART_IT_RXNE, ENABLE);
 	USART_ITConfig(BT_USART, USART_IT_TXE, DISABLE);
-	USART_Cmd(BT_USART, ENABLE);
+	USART_Cmd(BT_USART, ENABLE);*/
 
-	//terminal
-	USART_InitStructure.USART_BaudRate = TERMINAL_SPEED;
-	USART_Init( TERMINAL_USART, &USART_InitStructure);
-	USART_ITConfig(TERMINAL_USART, USART_IT_RXNE, ENABLE);
-	USART_ITConfig(TERMINAL_USART, USART_IT_TXE, DISABLE);
-	USART_Cmd(TERMINAL_USART, ENABLE);
+	AFIO->MAPR |= AFIO_MAPR_USART1_REMAP; //USART
+
+    BT_USART->BRR = 0x9C; //230400 USART APB1 = 36Mhz
+    BT_USART->CR1 = USART_CR1_UE | USART_CR1_RXNEIE | USART_CR1_RE | USART_CR1_TE; //Usart enable re te, interrupt rx, enable,
+
+
+	TERMINAL_USART->BRR = 0x9C; //230400 USART APB1 = 36Mhz
+	TERMINAL_USART->CR1 = USART_CR1_UE | USART_CR1_RXNEIE | USART_CR1_RE | USART_CR1_TE; //Usart enable re te, interrupt rx, enable,
+
 
 }
 
@@ -86,52 +122,23 @@ void GPIO_Conf(void)
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
     GPIO_Init(CH1_LED_PORT, &GPIO_InitStructure);
 
-    //ch1 led
-    GPIO_InitStructure.GPIO_Pin = CH2_R_LED_PIN | CH2_G_LED_PIN | CH2_B_LED_PIN;
+    //ch2 led
+    GPIO_InitStructure.GPIO_Pin = CH2_R_LED_PIN;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-    GPIO_Init(CH2_LED_PORT, &GPIO_InitStructure);
+    GPIO_Init(CH2_R_LED_PORT, &GPIO_InitStructure);
+
+    GPIO_InitStructure.GPIO_Pin = CH2_G_LED_PIN;
+    GPIO_Init(CH2_G_LED_PORT, &GPIO_InitStructure);
+
+    GPIO_InitStructure.GPIO_Pin = CH2_B_LED_PIN;
+    GPIO_Init(CH2_B_LED_PORT, &GPIO_InitStructure);
 
     //power supplier
     GPIO_InitStructure.GPIO_Pin = POWER_ON_PIN;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP ;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
     GPIO_Init(POWER_ON_PORT, &GPIO_InitStructure);
-
-
-}
-
-
-void RCC_Conf(void)
-{
-  	ErrorStatus HSEStartUpStatus;
-  	RCC_DeInit();
-  	RCC_HSEConfig(RCC_HSE_ON);
-  	HSEStartUpStatus = RCC_WaitForHSEStartUp();
-  	if(HSEStartUpStatus == SUCCESS)
-  	{
-    	FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);
-    	FLASH_SetLatency(FLASH_Latency_2);
-    	RCC_HCLKConfig(RCC_SYSCLK_Div1);
-    	RCC_PCLK2Config(RCC_HCLK_Div1);
-    	RCC_PCLK1Config(RCC_HCLK_Div2);
-    	RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_2); //watch out on this prescaler !!!
-    	RCC_PLLCmd(ENABLE);
-    	while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET);
-    	RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
-    	while(RCC_GetSYSCLKSource() != 0x08);
-  	}
-
-  	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB | RCC_APB2Periph_AFIO, ENABLE);
-
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, DISABLE);
-    #ifdef DEBUG
-        RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
-    #endif
-
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
 }
 
 void NVIC_Conf(void)
