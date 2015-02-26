@@ -16,5 +16,4 @@
  void GPIO_Conf(void);
  void TIM_Conf( TIM_TypeDef* TIMx );
 
-
 #endif /* HWINIT_H_ */

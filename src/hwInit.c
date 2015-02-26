@@ -7,7 +7,6 @@
 #include "hwInit.h"
 #include "hwConf.h"
 
-
 void RCC_Conf(void)
 {
     ErrorStatus HSEStartUpStatus;
@@ -57,7 +56,7 @@ void UART_Conf(void)
 
 	AFIO->MAPR |= AFIO_MAPR_USART1_REMAP; //USART
 
-    BT_USART->BRR = 0x9C; //230400 USART APB1 = 36Mhz
+    BT_USART->BRR = 0x9C; //230400 USART APB1 = 36Mhz// 0x753; == 19200 //
     BT_USART->CR1 = USART_CR1_UE | USART_CR1_RXNEIE | USART_CR1_RE | USART_CR1_TE; //Usart enable re te, interrupt rx, enable,
 
 

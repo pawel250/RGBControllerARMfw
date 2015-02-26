@@ -102,6 +102,14 @@ void SysTick_Handler(void)
 
 void USART1_IRQHandler(void)
 {
+    if ( (BT_USART->SR & USART_SR_FE) ||
+         (BT_USART->SR & USART_SR_IDLE) ||
+         (BT_USART->SR & USART_SR_NE) ||
+         (BT_USART->SR & USART_SR_ORE) )
+    {
+        errorUsart=BT_USART->SR;
+    }
+
     if ( BT_USART->SR & USART_SR_RXNE )
     {
         uint8_t readByte = BT_USART->DR;
@@ -109,7 +117,7 @@ void USART1_IRQHandler(void)
         BT_USART->DR = readByte;
 
         static uint8_t bytesReceived = 0; //ilosc odebranych bajtow
-        static uint8_t buff[6];
+        static uint8_t buff[FRAME_LENGTH];
 
         if( bytesReceived == 0 )
         {
@@ -137,15 +145,24 @@ void USART1_IRQHandler(void)
                 CH2_G_LED_CCR = buff[4];
                 CH2_B_LED_CCR = buff[5];
 
-                if (    buff[0] == 0 &&
-                        buff[1] == 0 &&
-                        buff[2] == 0 &&
-                        buff[3] == 0 &&
-                        buff[4] == 0 &&
-                        buff[5] == 0 )
+                if (!( buff[6] & POWER_ON_CONF_BIT) )
                 {
+                    CH1_R_LED_CCR = 0;
+                    CH1_G_LED_CCR = 0;
+                    CH1_B_LED_CCR = 0;
+
+                    CH2_R_LED_CCR = 0;
+                    CH2_G_LED_CCR = 0;
+                    CH2_B_LED_CCR = 0;
                     GPIO_WriteBit(POWER_ON_PORT, POWER_ON_PIN, POWER_OFF);
                 }
+                autoColor = 0;
+                if ( buff[6] & AUTO_COLOR_CONF_BIT )
+                {
+                    autoColor = 0xff0000;
+                    autoColorStage = 0;
+                }
+
             }
             else
             {
@@ -190,7 +207,7 @@ void cmdHandler( uint8_t *buff )
         CH2_B_LED_CCR = paramInt;
     }
 }
-extern volatile uint16_t errorUsart;
+
 void USART3_IRQHandler(void)
 {
     //if( USART_GetITStatus( TERMINAL_USART, USART_IT_RXNE ) != RESET )

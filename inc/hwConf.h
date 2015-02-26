@@ -42,14 +42,22 @@
 #define POWER_ON_PORT   GPIOA
 #define POWER_ON        Bit_RESET
 #define POWER_OFF       Bit_SET
+#define POWER_ON_CONF_BIT       0b1
+#define AUTO_COLOR_CONF_BIT     0b10
 
 #define LED_FRESH_RATE  60
 #define PWM_RES         255
 
 #define CPU_F           72000000
 
-#define START_BYTE      1
-#define STOP_BYTE       START_BYTE + 2
-#define FRAME_LENGTH    6
+#define START_BYTE              1
+#define STOP_BYTE               START_BYTE + 2
+#define FRAME_LENGTH            7
+
+#define AUTO_COLOR_LOOP_DELAY   2000
+
+extern volatile uint16_t errorUsart;
+extern volatile uint32_t autoColor;
+extern volatile uint8_t autoColorStage;
 
 #endif /*HWCONF_H_ */
