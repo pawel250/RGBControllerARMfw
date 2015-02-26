@@ -54,7 +54,7 @@
 #define STOP_BYTE               START_BYTE + 2
 #define FRAME_LENGTH            7
 
-#define AUTO_COLOR_LOOP_DELAY   2000
+#define AUTO_COLOR_LOOP_DELAY   20000
 
 extern volatile uint16_t errorUsart;
 extern volatile uint32_t autoColor;

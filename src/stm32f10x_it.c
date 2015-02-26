@@ -114,7 +114,7 @@ void USART1_IRQHandler(void)
     {
         uint8_t readByte = BT_USART->DR;
 
-        BT_USART->DR = readByte;
+        //BT_USART->DR = readByte;
 
         static uint8_t bytesReceived = 0; //ilosc odebranych bajtow
         static uint8_t buff[FRAME_LENGTH];
