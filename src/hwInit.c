@@ -54,7 +54,7 @@ void UART_Conf(void)
 	USART_ITConfig(BT_USART, USART_IT_TXE, DISABLE);
 	USART_Cmd(BT_USART, ENABLE);*/
 
-	AFIO->MAPR |= AFIO_MAPR_USART1_REMAP; //USART
+	//AFIO->MAPR |= AFIO_MAPR_USART1_REMAP; //USART
 
     BT_USART->BRR = 0x9C; //230400 USART APB1 = 36Mhz// 0x753; == 19200 //
     BT_USART->CR1 = USART_CR1_UE | USART_CR1_RXNEIE | USART_CR1_RE | USART_CR1_TE; //Usart enable re te, interrupt rx, enable,
@@ -106,14 +106,6 @@ void GPIO_Conf(void)
   	GPIO_InitStructure.GPIO_Pin = TERMINAL_RX_PIN ;
   	GPIO_Init(TERMINAL_PORT, &GPIO_InitStructure);
 #endif
-
-  	//BT power
-  	GPIO_InitStructure.GPIO_Pin = BT_ON;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP ;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-	GPIO_Init(BT_PORT, &GPIO_InitStructure);
-	//reset BTM
-	GPIO_ResetBits(BT_PORT, BT_ON);
 
 	//ch1 led
     GPIO_InitStructure.GPIO_Pin = CH1_R_LED_PIN | CH1_G_LED_PIN | CH1_B_LED_PIN;

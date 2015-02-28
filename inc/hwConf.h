@@ -12,11 +12,10 @@
 #define TERMINAL_RX_PIN    GPIO_Pin_11
 #define TERMINAL_PORT      GPIOB
 #define TERMINAL_USART     USART3 //you must change in printf.c also
-#define BT_TX_PIN       GPIO_Pin_6
-#define BT_RX_PIN       GPIO_Pin_7
-#define BT_PORT         GPIOB   //USART and IO pins must be in the same port.
+#define BT_TX_PIN       GPIO_Pin_9
+#define BT_RX_PIN       GPIO_Pin_10
+#define BT_PORT         GPIOA   //USART and IO pins must be in the same port.
 #define BT_USART        USART1
-#define BT_ON           GPIO_Pin_1
 
 #define CH1_LED_TIM     TIM2
 #define CH1_LED_PORT    GPIOA
